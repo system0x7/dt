@@ -9,6 +9,7 @@ license = "MIT"
 authors = ["system0x7"]
 keywords = ["data", "csv", "transform", "cli"]
 categories = ["command-line-utilities", "data-structures"]
+exclude = ["target/", ".git/", ".github/", "benches/", "CHANGELOG.md"]
 
 [[bin]]
 name = "dt"
