@@ -24,8 +24,6 @@ read('file.txt', delimiter='\t')    # Force tab delimiter
 read('messy.csv', skip_rows=2)      # Skip header lines
 ```
 
-**Note:** Avoid setting `trim_whitespace=false` on files with irregular spacing - columns may not parse correctly.
-
 ### write(path, ...)
 Write data to file.
 
@@ -55,7 +53,6 @@ select(types(Number))     # All numeric columns
 # With aliases (rename during selection)
 select($1 as id, $3 as population)
 select(name as full_name)
-select(old_name = $2)     # Also supported: old syntax
 ```
 
 ### drop(cols...)
@@ -339,7 +336,7 @@ data = read('samples.csv') | mutate(label = lookup(labels, sample_id, on='id', r
 
 # Or split at pipe for script files
 data = read('samples.csv') |
-.. mutate(label = lookup(labels, sample_id, on='id', return='label'), population = lookup(labels, sample_id, on='id', return='population'), region = lookup(labels, sample_id, on='id', return='region'))
+	mutate(label = lookup(labels, sample_id, on='id', return='label'), population = lookup(labels, sample_id, on='id', return='population'), region = lookup(labels, sample_id, on='id', return='region'))
 
 # Result: S001 -> Sample_A, 1000, North
 #         S002 -> Sample_B, 2000, South

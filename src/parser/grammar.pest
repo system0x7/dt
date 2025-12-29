@@ -70,7 +70,7 @@ selector_list = { selector_item ~ ("," ~ selector_item)* }
 
 selector_item = { aliased_selector | selector }
 
-aliased_selector = { selector ~ "as" ~ identifier | identifier ~ "=" ~ selector }
+aliased_selector = { selector ~ "as" ~ identifier }
 
 selector = {
     regex_selector

@@ -127,7 +127,7 @@ keep = ref | filter($3 in pops)
 result = fam | filter($2 in keep) | select($1, $2)
 
 # Save results
-result | write('output.tsv', delimiter='\t')
+result | write('output.tsv')  # .tsv extension auto-uses tab delimiter
 ```
 
 ## Core Features
@@ -187,7 +187,7 @@ data = read('samples.csv') |
 
 ## Documentation
 
-See [REFERENCE.md](REFERENCE.md) for complete syntax and examples.
+See [REFERENCE](REFERENCE.md) for complete syntax and examples.
 
 ## Supported Formats
 
