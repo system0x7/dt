@@ -14,17 +14,18 @@ A fast, readable data transformation tool for working with tabular data. Built w
 
 ## Installation
 
-### From source (requires Rust)
 ```bash
-git clone https://github.com/system0x7/dt
-cd dt
-cargo build --release
-# Binary at target/release/dt
-```
+# Homebrew (macOS/Linux)
+brew install system0x7/tap/dt
 
-### Using cargo
-```bash
+# Shell installer (macOS/Linux)
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/system0x7/dt/releases/latest/download/data-transform-installer.sh | sh
+
+# Cargo
 cargo install data-transform
+
+# From source
+cargo install --git https://github.com/system0x7/dt
 ```
 
 ## Quick Start
@@ -181,22 +182,26 @@ data = read('samples.csv') | mutate(population = lookup(labels, sample_id, on='i
 
 # Or split at pipe boundaries for readability
 data = read('samples.csv') |
-.. mutate(population = lookup(labels, sample_id, on='id', return='pop'), region = lookup(labels, sample_id, on='id', return='region'))
+	mutate(population = lookup(labels, sample_id, on='id', return='pop'), region = lookup(labels, sample_id, on='id', return='region'))
 ```
 
 ## Documentation
 
-See [QUICK_REFERENCE.md](QUICK_REFERENCE.md) for complete syntax and examples.
+See [REFERENCE.md](REFERENCE.md) for complete syntax and examples.
 
 ## Supported Formats
 
-Auto-detected from file extension:
-- CSV (`.csv`)
-- TSV (`.tsv`)
-- JSON (`.json`)
-- Parquet (`.parquet`)
+- **JSON** (`.json`) - Structured JSON data
+- **Parquet** (`.parquet`) - Columnar format
 
-For other delimited files, specify the delimiter:
+**Delimited text files** - Delimiter auto-detected for any file:
+- `.csv` - Defaults to comma, auto-detects if ambiguous
+- `.tsv` - Defaults to tab, auto-detects if ambiguous
+- Any other extension (`.txt`, `.dat`, `.psv`, etc.) - Auto-detects delimiter
+
+Auto-detection analyzes file content and identifies: comma, tab, pipe, semicolon, or space.
+
+Override auto-detection if needed:
 ```bash
 read('data.txt', delimiter=' ')
 read('data.psv', delimiter='|')
