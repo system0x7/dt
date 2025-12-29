@@ -1,0 +1,215 @@
+WHITESPACE = _{ " " | "\t" | "\r" }
+COMMENT = _{ "#" ~ (!"\n" ~ ANY)* }
+
+// Newline for statement separation
+NEWLINE = _{ "\n" }
+
+// Multi-statement program (for files/CLI)
+program = { SOI ~ statements ~ EOI }
+statements = _{ statement_inner ~ (NEWLINE+ ~ statement_inner)* ~ NEWLINE* }
+
+// Single statement (for REPL/single-line)
+statement = { SOI ~ statement_inner ~ EOI }
+
+// Statement content (no SOI/EOI)
+statement_inner = { assignment | pipeline }
+
+// Assignment (simple: name = pipeline)
+assignment = { identifier ~ "=" ~ pipeline }
+
+pipeline = { operation ~ ("|" ~ operation)* }
+
+variable_ref = !{ identifier ~ !("(") }
+
+operation = {
+    read_op
+    | write_op
+    | select_op
+    | filter_op
+    | mutate_op
+    | rename_op
+    | rename_all_op
+    | sort_op
+    | take_op
+    | skip_op
+    | slice_op
+    | drop_op
+    | distinct_op
+    | variable_ref
+}
+
+// Operations
+read_op = { "read" ~ "(" ~ string ~ params? ~ ")" }
+
+write_op = { ("write" | "save" | "to" | "export") ~ "(" ~ string ~ params? ~ ")" }
+
+select_op = { "select" ~ "(" ~ selector_list? ~ ")" }
+
+filter_op = { "filter" ~ "(" ~ expression ~ ")" }
+
+mutate_op = { "mutate" ~ "(" ~ assignment_list ~ ")" }
+
+rename_op = { "rename" ~ "(" ~ rename_mapping_list ~ ")" }
+
+rename_all_op = { "rename_all" ~ "(" ~ rename_strategy ~ ")" }
+
+sort_op = { ("sort" | "order" | "order_by") ~ "(" ~ sort_column_list ~ ")" }
+
+take_op = { ("take" | "head" | "limit") ~ "(" ~ number ~ ")" }
+
+skip_op = { ("skip" | "offset") ~ "(" ~ number ~ ")" }
+
+slice_op = { "slice" ~ "(" ~ number ~ "," ~ number ~ ")" }
+
+drop_op = { ("drop" | "remove") ~ "(" ~ selector_list ~ ")" }
+
+distinct_op = { "distinct" ~ "(" ~ selector_list? ~ ")" }
+
+// Selectors
+selector_list = { selector_item ~ ("," ~ selector_item)* }
+
+selector_item = { aliased_selector | selector }
+
+aliased_selector = { selector ~ "as" ~ identifier | identifier ~ "=" ~ selector }
+
+selector = {
+    regex_selector
+    | type_selector
+    | except_selector
+    | positional_range
+    | column_ref
+}
+
+regex_selector = { "re" ~ "(" ~ string ~ ")" }
+
+type_selector = { "types" ~ "(" ~ type_list ~ ")" }
+
+except_selector = { "-" ~ (column_ref | regex_selector) }
+
+type_list = { data_type ~ ("," ~ data_type)* }
+
+data_type = { "Number" | "String" | "Boolean" | "Date" | "DateTime" }
+
+// Rename
+rename_mapping_list = { rename_mapping ~ ("," ~ rename_mapping)* }
+
+rename_mapping = { column_ref ~ ("->" | "=>") ~ (identifier | string) }
+
+rename_strategy = {
+    replace_strategy
+    | sequential_strategy
+}
+
+replace_strategy = { "replace" ~ "(" ~ string ~ "," ~ string ~ ")" }
+sequential_strategy = { string ~ "+" ~ number ~ ".." ~ number }
+
+// Sort
+sort_column_list = { sort_column ~ ("," ~ sort_column)* }
+
+sort_column = { column_ref ~ order? }
+
+order = { "asc" | "desc" }
+
+// Columns
+column_ref_list = { column_ref ~ ("," ~ column_ref)* }
+
+positional_column = @{ "$" ~ ASCII_DIGIT+ }
+
+positional_range = { positional_column ~ ".." ~ positional_column }
+
+column_ref = { positional_column | identifier }
+
+// Assignments
+assignment_list = { assignment_item ~ ("," ~ assignment_item)* }
+
+assignment_item = { (positional_column | identifier | number) ~ "=" ~ expression }
+
+// Expressions
+expression = { logical_or }
+
+logical_or = { logical_and ~ ("or" ~ logical_and)* }
+
+logical_and = { comparison ~ ("and" ~ comparison)* }
+
+comparison = { term ~ (comparison_op ~ term)? }
+
+comparison_op = { ">=" | "<=" | "==" | "!=" | ">" | "<" | "in" }
+
+term = { factor ~ ((add_op | sub_op) ~ factor)* }
+
+add_op = { "+" }
+sub_op = { "-" }
+
+factor = { primary ~ ((mul_op | div_op) ~ primary)* }
+
+mul_op = { "*" }
+div_op = { "/" }
+
+primary = {
+    invalid_split
+    | split_call
+    | lookup_call
+    | replace_call
+    | regex_literal
+    | method_call
+    | list_literal       // List for 'in' operator
+    | literal
+    | positional_column  // Check before column_ref to prevent ambiguity
+    | column_ref
+    | "(" ~ expression ~ ")"
+}
+
+invalid_split = { "split" ~ "(" ~ expression ~ "," ~ expression ~ ")" ~ !("[") }
+
+split_call = { "split" ~ "(" ~ expression ~ "," ~ expression ~ ")" ~ "[" ~ number ~ "]" }
+
+lookup_call = { "lookup" ~ "(" ~ identifier ~ "," ~ expression ~ "," ~ "on" ~ "=" ~ lookup_field ~ "," ~ "return" ~ "=" ~ lookup_field ~ ")" }
+
+lookup_field = { column_ref | string }
+
+replace_call = { "replace" ~ "(" ~ expression ~ "," ~ expression ~ "," ~ expression ~ ")" }
+
+regex_literal = { "re" ~ "(" ~ string ~ ")" }
+
+list_literal = { "[" ~ literal_list? ~ "]" }
+
+literal_list = { literal ~ ("," ~ literal)* }
+
+method_call = { (identifier | column_ref) ~ ("." ~ identifier ~ "(" ~ arg_list? ~ ")")+ }
+
+arg_list = { expression ~ ("," ~ expression)* }
+
+// Parameters
+params = { "," ~ param ~ ("," ~ param)* }
+
+param = { identifier ~ "=" ~ param_value }
+
+param_value = { string | boolean | number | identifier }
+
+// Literals
+literal = { boolean | null | number | string }
+
+boolean = @{ "true" | "false" }
+
+null = { "null" }
+
+number = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? ~ suffix? }
+
+suffix = { ^"k" | ^"m" | ^"b" }
+
+string = ${ "\"" ~ double_quote_inner ~ "\"" | "'" ~ single_quote_inner ~ "'" }
+
+double_quote_inner = @{ double_quote_char* }
+single_quote_inner = @{ single_quote_char* }
+
+double_quote_char = {
+    !("\"" | "\\") ~ ANY
+    | "\\" ~ ANY
+}
+
+single_quote_char = {
+    !("'" | "\\") ~ ANY
+    | "\\" ~ ANY
+}
+
+identifier = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
