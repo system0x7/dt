@@ -15,9 +15,6 @@ A fast, readable data transformation tool for working with tabular data. Built w
 ## Installation
 
 ```bash
-# Homebrew (macOS/Linux)
-brew install system0x7/tap/dt
-
 # Shell installer (macOS/Linux)
 curl --proto '=https' --tlsv1.2 -LsSf https://github.com/system0x7/dt/releases/latest/download/data-transform-installer.sh | sh
 
