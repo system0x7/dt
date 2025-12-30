@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-12-30
+
+### Fixed
+- Allow mutating new columns using `$N` positional notation (e.g., `mutate($2 = expr)` now creates `column_2` when the DataFrame has fewer than 2 columns)
+
+## [0.1.0] - 2025-12-29
+
 ### Added
 - Initial release of `dt` (data-transform)
 - Interactive REPL mode for data transformations
@@ -23,7 +30,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Query optimization and lazy evaluation
 - Readable pipeline syntax
 - REPL commands: .help, .schema, .vars, .history, .undo, .clear, .exit
-
-## [0.1.0] - TBD
-
-Initial release.

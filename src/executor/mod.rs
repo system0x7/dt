@@ -630,14 +630,19 @@ impl Executor {
             let col_name = match &assignment.column {
                 AssignmentTarget::Name(name) => name.clone(),
                 AssignmentTarget::Position(pos) => {
-                    let col_names = df.get_column_names();
-                    if *pos == 0 || *pos > col_names.len() {
-                        return Err(DtransformError::InvalidOperation(format!(
-                            "DataFrame has {} columns, but ${} was specified",
-                            col_names.len(), pos
-                        )));
+                    if *pos == 0 {
+                        return Err(DtransformError::InvalidOperation(
+                            "Position $0 is invalid; column positions start at $1".to_string()
+                        ));
                     }
-                    col_names[pos - 1].to_string()
+                    let col_names = df.get_column_names();
+                    if *pos <= col_names.len() {
+                        // Use existing column name
+                        col_names[pos - 1].to_string()
+                    } else {
+                        // Create new column with auto-generated name (like CSV no-header behavior)
+                        format!("column_{}", pos)
+                    }
                 }
             };
 
