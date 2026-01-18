@@ -11,10 +11,10 @@ pub struct Executor {
 
 /// Auto-detect delimiter from file content
 /// Returns (delimiter, needs_trim_whitespace)
-fn auto_detect_delimiter(content: &str, file_extension: Option<&str>) -> Result<(char, bool)> {
+fn auto_detect_delimiter(content: &str, file_extension: Option<&str>, skip_rows: usize) -> Result<(char, bool)> {
     // For .tsv files, use tab delimiter but check if trimming is needed
     if file_extension == Some("tsv") {
-        let needs_trim = content.lines().take(100).any(|line| {
+        let needs_trim = content.lines().skip(skip_rows).take(100).any(|line| {
             line.trim() != line || line.contains("  ")
         });
         return Ok(('\t', needs_trim));
@@ -23,15 +23,16 @@ fn auto_detect_delimiter(content: &str, file_extension: Option<&str>) -> Result<
     // For .csv files, prefer comma but check if trimming is needed
     if file_extension == Some("csv") {
         // Check if file has leading/trailing whitespace or multiple consecutive spaces
-        let needs_trim = content.lines().take(100).any(|line| {
+        let needs_trim = content.lines().skip(skip_rows).take(100).any(|line| {
             line.trim() != line || line.contains("  ")
         });
         return Ok((',', needs_trim));
     }
 
-    // Sample first 100 non-empty lines for detection
+    // Sample first 100 non-empty lines for detection (after skipping header rows)
     let sample_lines: Vec<&str> = content
         .lines()
+        .skip(skip_rows)
         .filter(|l| !l.trim().is_empty())
         .take(100)
         .collect();
@@ -254,7 +255,7 @@ impl Executor {
                 let (delimiter, trim_whitespace) = if op.delimiter.is_none() || op.trim_whitespace.is_none() {
                     // Need to auto-detect delimiter and/or trim_whitespace
                     let content = std::fs::read_to_string(path)?;
-                    let (detected_delim, detected_trim) = auto_detect_delimiter(&content, format)?;
+                    let (detected_delim, detected_trim) = auto_detect_delimiter(&content, format, skip_rows)?;
 
                     (
                         op.delimiter.unwrap_or(detected_delim),
@@ -351,7 +352,7 @@ impl Executor {
                 let (delimiter, trim_whitespace) = if op.delimiter.is_none() || op.trim_whitespace.is_none() {
                     // Need to auto-detect delimiter and/or trim_whitespace
                     let content = std::fs::read_to_string(path)?;
-                    let (detected_delim, detected_trim) = auto_detect_delimiter(&content, format)?;
+                    let (detected_delim, detected_trim) = auto_detect_delimiter(&content, format, skip_rows)?;
 
                     (
                         op.delimiter.unwrap_or(detected_delim),
