@@ -73,7 +73,8 @@ Keep rows matching condition.
 filter(age > 30)
 filter(name == "Alice")
 filter(salary > 50000 and department == "Engineering")
-filter($3 in want)        # Column in variable
+filter($3 in want)                            # Column in variable
+filter(id in ['A001', 'B002', 'C003'])        # Inline list (square brackets)
 ```
 
 **Operators:** `>`, `<`, `>=`, `<=`, `==`, `!=`, `and`, `or`, `in`
