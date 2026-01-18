@@ -18,11 +18,11 @@ A fast, readable data transformation tool for working with tabular data. Built w
 # Shell installer (macOS/Linux)
 curl --proto '=https' --tlsv1.2 -LsSf https://github.com/system0x7/dt/releases/latest/download/data-transform-installer.sh | sh
 
-# Cargo
-cargo install data-transform
+# PowerShell installer (Windows)
+powershell -ExecutionPolicy ByPass -c "irm https://github.com/system0x7/dt/releases/latest/download/data-transform-installer.ps1 | iex"
 
-# From source
-cargo install --git https://github.com/system0x7/dt
+# Cargo (any platform with Rust installed)
+cargo install data-transform
 ```
 
 ## Quick Start
