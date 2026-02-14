@@ -1265,7 +1265,24 @@ impl Executor {
 
                         mask.into_series()
                     }
-                    DataType::Int64 | DataType::Int32 | DataType::Float64 | DataType::Float32 => {
+                    DataType::Int64 | DataType::Int32 => {
+                        let left_i64 = left.cast(&DataType::Int64)?;
+                        let right_i64 = right.cast(&DataType::Int64)?;
+
+                        let left_num = left_i64.i64()?;
+                        let right_num = right_i64.i64()?;
+
+                        // Collect right values into a HashSet for O(1) lookup.
+                        let right_set: HashSet<Option<i64>> = right_num.into_iter().collect();
+
+                        let mask: BooleanChunked = left_num
+                            .into_iter()
+                            .map(|val| right_set.contains(&val))
+                            .collect();
+
+                        mask.into_series()
+                    }
+                    DataType::Float64 | DataType::Float32 => {
                         // Convert both to f64 for comparison
                         let left_f64 = left.cast(&DataType::Float64)?;
                         let right_f64 = right.cast(&DataType::Float64)?;

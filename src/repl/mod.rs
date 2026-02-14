@@ -43,7 +43,12 @@ impl Repl {
     }
 
     pub fn run(&mut self) -> Result<()> {
-        println!("{}", "Data Transform REPL v0.1.3".bright_blue().bold());
+        println!(
+            "{}",
+            format!("Data Transform REPL v{}", env!("CARGO_PKG_VERSION"))
+                .bright_blue()
+                .bold()
+        );
         println!("Type .help for help, .exit to quit");
         println!(
             "Use .undo/.redo to step through operations\n"
